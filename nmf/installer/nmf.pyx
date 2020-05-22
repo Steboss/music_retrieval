@@ -15,14 +15,14 @@ cimport numpy as np
 
 
 cdef extern from "../c_code/nmf_2.c":
-    double* nmf(int n_components,
+    float* nmf(int n_components,
                 int max_iter,
                 int random_state,
-                double *X,
+                float *X,
                 int X_rows,
                 int X_columns,
-                double *W_cython,
-                double *H_cython,
+                float *W_cython,
+                float *H_cython,
                 int verbose)
 
 
@@ -52,24 +52,31 @@ cpdef play(X, n_components, max_iter, random_state, verbose):
     """
     #get signal size
     row_size,column_size = np.shape(X)
+    X_cython = np.zeros(row_size*column_size, dtype=np.float32)
+    counter = 0
+    for i in range(0, row_size):
+      for j in range(0, column_size):
+        X_cython[counter ] = X[i][j]
+        counter+=1
+    print(X_cython)
     #convert the input array in a memory view
     print("Conversion of X into memoryview")
-    cdef double[:,:] a = X
+    cdef float[:] a = X_cython
     #TODO: What about if we have a high dimensional signal?????
     print("Creating W array with %d elements"% (n_components*row_size))
     #initialize a vectorize version of W
     W_elems = n_components*row_size
-    cdef double[:] W_cython = np.zeros(W_elems)
+    cdef float[:] W_cython = np.zeros(W_elems, dtype=np.float32)
     #intiialize a vectorize version of H
     print("Creating H array with %d elements"%(n_components*column_size))
     H_elems = n_components*column_size
-    cdef double[:] H_cython = np.zeros(H_elems)
+    cdef float[:] H_cython = np.zeros(H_elems, dtype=np.float32)
     print("Calling C")
     #call C-nmf
     nmf(n_components,
         max_iter,
         random_state,
-        &a[0,0],
+        &a[0],
         row_size,
         column_size,
         &W_cython[0],
