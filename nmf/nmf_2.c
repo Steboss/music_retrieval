@@ -87,8 +87,9 @@ float define_avg_element(float **X, int X_rows, int X_columns, int n_components)
     }
   }
   if (summa<0.0){
-    summa = - summa;
+    summa = -1*summa;
   }
+  printf("Final sum %.4f\n",summa);
   float avg = sqrt( (summa/n_elems)/ n_components) ;
 
   printf("%.2f\n",avg);
