@@ -268,7 +268,7 @@ float** coordinate_descent_solver(float **H,
       float XHtcurr_summ= 0.0;
       for (int i =0; i<X_rows; i++){
         for (int j=0; j<n_components; j++){
-          for (int k=0; k<n_components;k++){
+          for (int k=0; k<X_columns;k++){
             XHtcurr_summ+=Xmat[i][k]*Ht[k][j];
           }
           XHt[i][j]= XHtcurr_summ;
@@ -385,7 +385,7 @@ float** coordinate_descent_solver(float **H,
           hess = WttWt[i][i];
           //compute W if the hessian is !=0
           if (hess!=0){
-            guess = Ht[j][i]; //- (grad/hess);
+            guess = Ht[j][i] - (grad/hess);
             if (guess>0.0){
               max_guess = guess;
             }
