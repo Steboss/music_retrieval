@@ -79,14 +79,20 @@ float ** multiply_matrix(float **mat, float **mat2, float ** result, int row, in
 float define_avg_element(float **X, int X_rows, int X_columns, int n_components){
   //X_rows --> n_samples
   //X_columns --> n_compoments
-  float summa = 0 ;
+  float summa = 0.0 ;
   int n_elems = X_rows*X_columns;
   for (int i=0; i< X_rows; i++){
     for (int j=0; j<X_columns;j++){
+      //printf("%.2f\n", X[i][j]);
       summa+=X[i][j];
     }
   }
+  if (summa<0.0){
+    summa = -1*summa;
+  }
+  printf("Final sum %.4f\n",summa);
   float avg = sqrt( (summa/n_elems)/ n_components) ;
+
   printf("%.2f\n",avg);
   return avg;
 }
@@ -460,27 +466,9 @@ float* nmf(int n_components,
   for (int i=0; i<X_rows;i++){
     for(int j=0; j<X_columns;j++){
       Xmat[i][j]=X[counter];
-      printf("Xmat[%d][%d]: %.2f\n", i,j, Xmat[i][j]);
       counter+=1;
     }
   }
-
-  /*For future reference!
-  //FOUND THE ERROR! WE MADE A MISTAKE IN INITIALIZING XmatT! WE FORGOT float* at the end!
-  float **XmatT;
-  printf("Intiailizeing XmatT wit h X_columns %d rows and X_rows columns %d\n", X_columns, X_rows);
-  XmatT = (float **)malloc(X_columns*sizeof(float*));
-  for (int i= 0; i<X_columns;i++){
-      printf("pointer elements %d\n",i);
-      XmatT[i]=(float *)malloc(X_rows *sizeof(float));
-  }
-
-  for (int i=0; i<X_columns;i++){
-    for (int j=0; j<X_rows;j++){
-      printf("Initializing elements %d, %d\n",i,j);
-      XmatT[i][j]=1.0;
-    }
-  }*/
 
 
   //take the average elmeent
@@ -527,10 +515,10 @@ float* nmf(int n_components,
     printf("H matrix\n");
     print_matrix(H, n_components, X_columns);
   }
-  printf("Final W matrix\n");
-  print_matrix(W,X_rows, n_components);
-  printf("Final H matrix\n");
-  print_matrix(H, n_components, X_columns);
+  //printf("Final W matrix\n");
+  //print_matrix(W,X_rows, n_components);
+  //printf("Final H matrix\n");
+  //print_matrix(H, n_components, X_columns);
   //vectorize the result to be sent to cython
   int W_counter = 0;
   for (int i =0; i< X_rows; i++){

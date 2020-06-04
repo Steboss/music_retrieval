@@ -58,7 +58,7 @@ cpdef play(X, n_components, max_iter, random_state, verbose):
       for j in range(0, column_size):
         X_cython[counter ] = X[i][j]
         counter+=1
-    print(X_cython)
+    #print(X_cython)
     #convert the input array in a memory view
     print("Conversion of X into memoryview")
     cdef float[:] a = X_cython
