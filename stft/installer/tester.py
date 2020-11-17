@@ -92,13 +92,6 @@ print("Dimension of the signal after boundary and padding %d\n"% len(signal))
 
 #compute the STFT
 print("STFT...")
-#signal = [1,2,3,4,5,6,7,8,9,10]
-#signal = np.asarray(signal)
-#signal = padding(signal,8)
-#print(signal)
-#rate = 1
-#windowSize = 8
-#hopSize = 8
 
 #create the frequencies
 freq_spacing = 1.0/(rate) #the spacing

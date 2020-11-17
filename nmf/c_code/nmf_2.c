@@ -244,9 +244,9 @@ float** coordinate_descent_solver(float **H,
   }
 
   ///iterationsf
-  for (int i=1; i< max_iter+1; i++){
+  for (int iter=1; iter< max_iter+1; iter++){
       if (verbose==1){
-        printf("Iteration: %d\n", i);
+        printf("Iteration: %d\n", iter);
       }
       violation=0.0;
       //update W
@@ -287,7 +287,6 @@ float** coordinate_descent_solver(float **H,
       violation_middle = 0.0;
       //printf("W computation");
       for (int i =0; i<n_components; i++){  //i in permutations --> t
-
         for (int j=0; j<X_rows; j++){ //j in number of samples  --> i
           //gradient  grad = -XHt[i, t]  i in python is j here and t is i
           grad = -XHt[j][i];
@@ -409,7 +408,7 @@ float** coordinate_descent_solver(float **H,
       //print_matrix(Ht, n_components, X_columns);
       //printf("Current violation %.6f\n", violation);
 
-      if (i==1){
+      if (iter==1){
         violation_init=violation;
         //printf("Violation init: %.6f\n", violation_init);
       }
@@ -422,7 +421,7 @@ float** coordinate_descent_solver(float **H,
         //printf("Current violation_init %.6f\n", violation_init);
       }
       if  (violation/violation_init<0.00001){
-        printf("Converged at iteration %d\n", (i+1));
+        printf("Converged at iteration %d\n", (iter+1));
         break;
       }
   }

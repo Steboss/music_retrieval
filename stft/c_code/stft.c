@@ -36,7 +36,6 @@ double* stft(double *wav_data, int samples, int windowSize, int hop_size,\
   //makdouble *stft_data;
   //allocate the memory for the fftw
   stft_data = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex)*(windowSize)));
-  //stft_data = malloc(sizeof(double)*windowSize);
   fft_result= (fftw_complex*)(fftw_malloc(sizeof(fftw_complex)*(windowSize)));
   storage = (fftw_complex*)(fftw_malloc(sizeof(fftw_complex)*(samples)));
   printf("Total length of storage %d\n", (samples));
