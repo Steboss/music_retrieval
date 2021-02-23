@@ -11,7 +11,9 @@ X = np.abs(ss.hilbert(X))
 #X = np.ones(1000)
 #np.array([[1.,1.], [2., 1.], [3., 1.2], [4., 1.], [5., 0.8], [6., 1.]])
 scales, fluct_to_array, coeff_to_array= dfa.play(X,5,9,0.25)
+print("Fluctuations")
 print(fluct_to_array)
+print("Coefficients, swapped")
 print(coeff_to_array)
 #we need to swap the order here, due to the way coeff are computed!
 coeff_tmp = coeff_to_array[1]

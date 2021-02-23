@@ -35,34 +35,34 @@ cpdef play(X, scale_low, scale_high, scale_dense):
     r"""Cython transformation for dfa
     Parameters
     ----------
-    For the moment just take X from python, then we'll pass scales and dens
+    X: np.array, input signal 
+    scale_low: int, the lowest exponent for intervals 
+    scale_high: int, highest exponent for intervals 
+    scale_dens: float, how dense intervals are between 2^scale_low and 2^scale_high
 
     Returns
     -------
     """
-    #get signal size
+    # get signal size
     n_elems = len(X)
-    #convert to float
+    # convert to float and vectorize
     X_cython = np.zeros(n_elems, dtype=np.float32)
     for i in range(n_elems):
       X_cython[i] = X[i]
     cdef float[:] a = X_cython
-    #print(X_cython)
-    #create the scales  intc otherwise np.int it's long which is not what we want and we'll have a type mismatch
-    #scales = (2**np.arange(scale_low, scale_high, scale_dense)).astype(np.intc)
+    # create the scales  
+    # use intc otherwise np.int it's long which is not what we want and we'll have a type mismatch
     scales = (2**np.arange(scale_low, scale_high, scale_dense)).astype(np.intc)
-    print(scales)
     scale_length = len(scales)
-    #convert to memory vview
-    cdef int[:] memory_scales = scales#scales_cython
+    # convert to memory view
+    cdef int[:] memory_scales = scales
 
-    #define flucuations
+    # define flucuations
     cdef float[:] fluct = np.zeros(scale_length, dtype=np.float32)
+    # define coefficients
     cdef float[:] coeffs = np.zeros(2, dtype=np.float32)
     print("Calling C")
-
-
-    #call C-nmf
+    #call C-DFA
     dfa(&a[0],
         n_elems,
         &memory_scales[0],

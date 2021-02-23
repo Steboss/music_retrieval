@@ -79,6 +79,7 @@ float* cumsum_averaged(float* X, int n_elems, float avg, float* Xcumsum){
 void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float* coeffs){
   /*dfa function  -- at the moment let's stick to a vectorial view, then we can think
   of having amulti dimensional dfa with dataframes/array
+
   Parameters
   ----------
   X: float*
@@ -87,7 +88,7 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
      number of elements in vector X
   scales: float*
      vector of scales, start from scale_low to scale_max with scale_dens as range
-    created in python -- explanation here:
+     created in python -- explanation here:
                       scale_low: int
                          first scale value
                       scale_max: int
@@ -105,42 +106,45 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
   ------
 
   */
-  //fix the fitting order
+
   int fitting_order = 1;
   float* Xcumsum;
   Xcumsum = (float*)malloc(n_elems*sizeof(float));
-  //average of the vector X
+  // average of the vector X
   float avg = vector_avg(X, n_elems);
-  //then cumulative sum - average  --> y = np.cumsum(x - np.mean(x))
+  // then cumulative sum - average  --> y = np.cumsum(x - np.mean(x))
   Xcumsum = cumsum_averaged(X, n_elems, avg, Xcumsum);
 
-  //final results will be stored in rms vector
-  //rms vector has the dimension of len of scale --> scales_len
+  // final results will be stored in rms vector
+  // rms vector has the dimension of len of scale --> scales_len
+  // scales_len is how many samples we have subdivided the signal
   float * rms; //vector whose dimensions are  as the same as xcumsum
   rms = (float*) malloc(scales_len*sizeof(int));
-  //initialize to 0
+  //  initialize to 0
   for (int i=0; i<scales_len;i++){
       rms[i]= 0.0;
   }
 
-  //initialize the coefficient vector
-  //initialize a vector whose shape is fitting_Order +1 to store the coefficient of the fitting
+  // initialize the coefficient vector
+  // initialize a vector whose shape is fitting_Order +1 to store the coefficient of the fitting
+  // as a matter of fact the polynomial fitting is ax + b = y
+  // as you can see we have 2 coeffs, a and b
   float* tmpCoeff;
   tmpCoeff = (float*)malloc((fitting_order+1)*sizeof(float)); //2 is 1 + 1 where 1 is the order of th epolynomiaal fitting
   for (int h=0; h<(fitting_order+1);h++){
     tmpCoeff[h]=0.0;
-  }//if we had order 3, we would have had 4 as malloc(4*sizeof(float))
+  }// for example if we had order 3, we would have had 4 as malloc(4*sizeof(float))
 
-  //HERE WE START THE RMS calculation
+  // HERE WE START THE RMS calculation
   for (int i=0; i<scales_len; i++){
-      //take the current scale
+      // take the current scale
       int curr_scale = scales[i];
       printf("Current scale %d\n", curr_scale);
-      //create a scale_ax vector
-      //compute the shape
+      // determine the dimensions of the current signal
       int shape1 = floor_div(n_elems, curr_scale);
-      int counter =0  ; //this cound will be updated in order to cycle thorugh all the elmeents
-                      //of x in correct order, updating the strided single vecto relment tmpX
+      // initialize a counter, in order to cycle through x correctly 
+      // this ensures to update the strided single vector element tmpX
+      int counter =0;
       //initialize a tmporary X vector, to host single strided Xcumsum matrix
       float* tmpX;
       tmpX = (float*) malloc( curr_scale*sizeof(float)); //this will contain a max of curr_scale elements
@@ -148,12 +152,12 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
       for (int h=0; h<curr_scale;h++){
         tmpX[h] = 0.0;
       }
-      //now we have the first bit of X with curr_scale elements
-      //we have to perform the fitting so we need an x-axis, which is made of
-      //number of elements of the tmpX vectors, so curr_scale number of elemetns
 
-      //basically it goes from 0 to curr_scale - 1
-      //now polyfit of scale_ax and tmp  --> extenral funciton
+      // now we have the first bit of X with curr_scale elements
+      // we have to perform the fitting so we need an x-axis, which is made of
+      // number of elements of the tmpX vectors, so curr_scale number of elements
+      // basically it goes from 0 to curr_scale - 1
+      // now polyfit of scale_ax and tmp  --> external function
       float* scale_ax;
       scale_ax = (float*)malloc(curr_scale*sizeof(float*));
       //
@@ -161,14 +165,13 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
         scale_ax[h] = h;
       }
       //
-      //initialize a vector of size curr_scale, as tmpX, to be used to evaluate
-      //the goodness of fitting  between fitting_result and tmpX[counter2] element
+      // initialize a vector of size curr_scale, as tmpX, to be used to evaluate
+      // the goodness of fitting  between fitting_result and tmpX[counter2] element
       float* tmpDiff;
       tmpDiff = (float*)malloc((curr_scale)*sizeof(float));
       for (int h=0; h<(curr_scale);h++){
         tmpDiff[h]=0.0;
       }
-      //
       //store all the rms in a shape1 vector
       float* tmpShape1;
       tmpShape1=(float*)malloc( (shape1)*sizeof(float));
@@ -176,26 +179,28 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
         tmpShape1[h]=0.0;
       }
 
-      //now we have to divide Xcumsum into shape1 elements, each of which has curr_scale elements
-      //whcih are updated, namely move along the Xcumsum vector, thorugh counter
+      // now we have to divide Xcumsum into shape1 elements, each of which has curr_scale elements
+      // whcih are updated, namely move along the Xcumsum vector, thorugh counter
       for (int j=0; j< shape1; j++){ //this is the number of final matrix we want to have
           for (int k=0; k< curr_scale;k++){ //this is the number of the elements of X to be processed at each j step
                 tmpX[k] = Xcumsum[counter];
                 counter+=1;
             }
-          //POLYFIT
-          //perform the fitting and update tmpCoeff
+
+          printf("Current counter value %d current scale %d\n", counter, curr_scale);
+          // POLYFIT
+          // perform the fitting and update tmpCoeff
           polyfit(scale_ax, //int*
                   tmpX, //float*
                   curr_scale, //int
                   fitting_order, //try a linear fitting
                   tmpCoeff //float*
                 ) ;
-          printf("tmpCoeff[0] :%.4f  tmpCoeff[1] : %.4f\n", tmpCoeff[0], tmpCoeff[1]);
-          //now we need to evaluate the polynomial fit
-          //to do that we can do the  polyval so  np.polyval(coeff, scale_ax)
-          //if we have two coefficient we have  tmpCoeff[1]*x + tmpCoeff[0]
-          //x must be substituted with the i-th element of tmpX
+          // printf("tmpCoeff[0] :%.4f  tmpCoeff[1] : %.4f\n", tmpCoeff[0], tmpCoeff[1]);
+          // now we need to evaluate the polynomial fit
+          // to do that we can do the  polyval so  np.polyval(coeff, scale_ax)
+          // if we have two coefficient we have  tmpCoeff[1]*x + tmpCoeff[0]
+          // x must be substituted with the i-th element of tmpX
           float fitting_result = 0.0;
           //
           for(int t=0; t<curr_scale;t++){
@@ -214,48 +219,48 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
               //t of the tmpX at the moment we are computing the difference of elements
               float curr_diff = tmpX[t]-fitting_result;
               float squared_diff =  pow( curr_diff,2);
-              printf("tmpX[%d]: %.4f, fitting_result:%.4f, diff:%.4f, pow:%.4f\n",
-                     t, tmpX[t], fitting_result, curr_diff, squared_diff);
+              // printf("tmpX[%d]: %.4f, fitting_result:%.4f, diff:%.4f, pow:%.4f\n",
+              //       t, tmpX[t], fitting_result, curr_diff, squared_diff);
               tmpDiff[t] =squared_diff;
-              printf("pow(tmpX[t] - fitting_result, 2):%.8f\n", tmpDiff[t]);
+              // printf("pow(tmpX[t] - fitting_result, 2):%.8f\n", tmpDiff[t]);
               fitting_result = 0.0;
-              //at the end we need to compute average of ((xcut-xfit)**2))
+              // at the end we need to compute average of ((xcut-xfit)**2))
           }
-          //here we are closing shape1 cycle, namely cycle through all the strided elements of X
-          //at this stage we need to compute the sqrt of the average of tmpShape1 elements
+          // here we are closing shape1 cycle, namely cycle through all the strided elements of X
+          // at this stage we need to compute the sqrt of the average of tmpShape1 elements
           float tmpDiffavg = vector_avg(tmpDiff, curr_scale);
-          //this is the shape1-th element of the final
+          // this is the shape1-th element of the final
           tmpShape1[j] = sqrt(tmpDiffavg);
-          printf("elment %d  rms %.8f\n", j, tmpShape1[j]);
+          // printf("elment %d  rms %.8f\n", j, tmpShape1[j]);
       }
       //
-      //printf("Freeing tmpDiff\n");
+      // printf("Freeing tmpDiff\n");
       free (tmpDiff);
       tmpDiff = NULL;
       //
-      ///printf("Freeing tmpX\n");
+      /// printf("Freeing tmpX\n");
       free (tmpX);
       tmpX = NULL;
       //
-      //printf("Computing sqrt of average vector of tmpShape1\n");
+      // printf("Computing sqrt of average vector of tmpShape1\n");
       for (int h=0; h<shape1;h++){
         tmpShape1[h] = pow(tmpShape1[h],2);
       }
       float tmpShape1avg = vector_avg(tmpShape1, shape1);
       tmpShape1avg = sqrt(tmpShape1avg);
-      //printf("Final result %.4f\n", tmpShape1avg);
-      //this is the rms i-th sotion s
-      //Check values in rms
-      //printf("Updating element i %d oftmprms vector\n",i);
+      // printf("Final result %.4f\n", tmpShape1avg);
+      // this is the rms i-th sotion s
+      // Check values in rms
+      // printf("Updating element i %d oftmprms vector\n",i);
       rms[i] = tmpShape1avg;
-      printf("Fluctuation %d : %.4f\n", i, rms[i]);
-      //printf("Freeing tmpShape1\n");
+      // printf("Fluctuation %d : %.4f\n", i, rms[i]);
+      // printf("Freeing tmpShape1\n");
       free (tmpShape1);
       tmpShape1 = NULL;
   }
 
-  //What we have computed are the fluctuations
-  //now we can retrieve the Hurst exponent via a polyfit again
+  // What we have computed are the fluctuations
+  // now we can retrieve the Hurst exponent via a polyfit again
   float* log2_scales ;
   log2_scales = (float*)malloc(scales_len*sizeof(float));
   for(int h=0; h<scales_len;h++){
@@ -269,7 +274,7 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
     log2_fluct[h]= Log2(rms[h]);
   }
 
-  //1 coefficient
+  // 1 coefficient
   polyfit(log2_scales,
           log2_fluct,
           scales_len,
@@ -280,12 +285,12 @@ void dfa(float* X, int n_elems, int* scales, int scales_len, float* fluct, float
   for (int h=0; h<scales_len;h++){
     fluct[h] = rms[h];
   }
-  //after this we'll need to compute the fitting of the rms
-  //printf("Freeing tmpCoeff\n");
+  // after this we'll need to compute the fitting of the rms
+  // printf("Freeing tmpCoeff\n");
   free (tmpCoeff);
-  //printf("Freeing cumsum\n");
+  // printf("Freeing cumsum\n");
   free(Xcumsum);
-  //printf("Freeing rms\n");
+  //p rintf("Freeing rms\n");
   free(rms);
   //
   free(log2_fluct);

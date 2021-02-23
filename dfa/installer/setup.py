@@ -5,9 +5,10 @@ from Cython.Build import cythonize
 import scipy
 import numpy
 
+os.environ['ARCHFLAGS'] = '-arch x86_64'
 libraries = [ "m"]
-extra_compile_args = ['-O3', '-std=c99']
-extra_link_args = ['-O3', '-std=c99']
+extra_compile_args = []
+extra_link_args = []
 
 cython_directives = {
     'embedsignature': True,
@@ -17,10 +18,11 @@ cython_directives = {
 
 ext = Extension(
         "dfa.dfa",
-        ["dfa.pyx"],#,"../c_code/dfa.c"],
+        ["dfa.pyx"],
         libraries=libraries,
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,
+        include_dirs=[numpy.get_include()]
         )
 
 setup(
