@@ -1,5 +1,0 @@
-Here we have a good example:
-1) We have to define all the cdef extern in the pyx files, otherwise we'll have a multple definition in the compiler 
-2) We need to be aware of what np.int means in Cyhton, thus in C
-https://stackoverflow.com/questions/21851985/difference-between-np-int-np-int-int-and-np-int-t-in-cython
-TO have a full C integer we need np.intc
